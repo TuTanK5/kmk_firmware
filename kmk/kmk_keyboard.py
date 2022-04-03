@@ -1,7 +1,7 @@
 from supervisor import ticks_ms
 
 from kmk.consts import KMK_RELEASE, UnicodeMode
-from kmk.hid import BLEHID, USBHID, AbstractHID, HIDModes
+from kmk.hid import BLEHID, AbstractHID, HIDModes
 from kmk.keys import KC
 from kmk.kmktime import ticks_add, ticks_diff
 from kmk.matrix import MatrixScanner, intify_coordinate
@@ -38,7 +38,7 @@ class KMKKeyboard:
     # Internal State
     keys_pressed = set()
     _coordkeys_pressed = {}
-    hid_type = HIDModes.USB
+    hid_type = HIDModes.BLE
     secondary_hid_type = None
     _hid_helper = None
     _hid_send_enabled = False
@@ -298,8 +298,6 @@ class KMKKeyboard:
     def _init_hid(self):
         if self.hid_type == HIDModes.NOOP:
             self._hid_helper = AbstractHID
-        elif self.hid_type == HIDModes.USB:
-            self._hid_helper = USBHID
         elif self.hid_type == HIDModes.BLE:
             self._hid_helper = BLEHID
         else:
@@ -414,12 +412,12 @@ class KMKKeyboard:
                 if self.debug_enabled:
                     print('Failed to run post hid function in extension: ', err, ext)
 
-    def go(self, hid_type=HIDModes.USB, secondary_hid_type=None, **kwargs):
+    def go(self, hid_type=HIDModes.BLE, secondary_hid_type=None, **kwargs):
         self._init(hid_type=hid_type, secondary_hid_type=secondary_hid_type, **kwargs)
         while True:
             self._main_loop()
 
-    def _init(self, hid_type=HIDModes.USB, secondary_hid_type=None, **kwargs):
+    def _init(self, hid_type=HIDModes.BLE, secondary_hid_type=None, **kwargs):
         self._go_args = kwargs
         self.hid_type = hid_type
         self.secondary_hid_type = secondary_hid_type

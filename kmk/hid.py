@@ -1,25 +1,19 @@
-import usb_hid
 from micropython import const
 
 from storage import getmount
 
 from kmk.keys import FIRST_KMK_INTERNAL_KEY, ConsumerKey, ModifierKey
 
-try:
-    from adafruit_ble import BLERadio
-    from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
-    from adafruit_ble.services.standard.hid import HIDService
-except ImportError:
-    # BLE not supported on this platform
-    pass
+from adafruit_ble import BLERadio
+from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
+from adafruit_ble.services.standard.hid import HIDService
 
 
 class HIDModes:
     NOOP = 0  # currently unused; for testing?
-    USB = 1
     BLE = 2
 
-    ALL_MODES = (NOOP, USB, BLE)
+    ALL_MODES = (NOOP, BLE)
 
 
 class HIDReportTypes:
@@ -200,41 +194,6 @@ class AbstractHID:
                 where_to_place[idx] = 0x00
 
         return self
-
-
-class USBHID(AbstractHID):
-    REPORT_BYTES = 9
-
-    def post_init(self):
-        self.devices = {}
-
-        for device in usb_hid.devices:
-            us = device.usage
-            up = device.usage_page
-
-            if up == HIDUsagePage.CONSUMER and us == HIDUsage.CONSUMER:
-                self.devices[HIDReportTypes.CONSUMER] = device
-                continue
-
-            if up == HIDUsagePage.KEYBOARD and us == HIDUsage.KEYBOARD:
-                self.devices[HIDReportTypes.KEYBOARD] = device
-                continue
-
-            if up == HIDUsagePage.MOUSE and us == HIDUsage.MOUSE:
-                self.devices[HIDReportTypes.MOUSE] = device
-                continue
-
-            if up == HIDUsagePage.SYSCONTROL and us == HIDUsage.SYSCONTROL:
-                self.devices[HIDReportTypes.SYSCONTROL] = device
-                continue
-
-    def hid_send(self, evt):
-        # int, can be looked up in HIDReportTypes
-        reporting_device_const = evt[0]
-
-        return self.devices[reporting_device_const].send_report(
-            evt[1 : HID_REPORT_SIZES[reporting_device_const] + 1]
-        )
 
 
 class BLEHID(AbstractHID):
