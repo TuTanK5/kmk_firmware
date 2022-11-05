@@ -33,8 +33,10 @@ def compile():
 
 if __name__ == '__main__':
     try:
-        subprocess.run('mpy-cross', stdout=devnull, stderr=devnull)
-    except (FileNotFoundError):
+        outFile = open('out.txt', 'w+')
+        errFile = open('err.txt', 'w+')
+        subprocess.run('mpy-cross', stdout=outFile, stderr=errFile)
+    except FileNotFoundError:
         print()
         print('`mpy-cross` not found. Ensure mpy-cross is working from a shell.')
         print()
